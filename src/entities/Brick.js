@@ -47,3 +47,14 @@ export class Brick extends Phaser.GameObjects.Rectangle {
   
   
   
+
+
+
+ 
+ 
+  
+  
+  
+  
+  
+  

@@ -33,3 +33,4 @@ export class Paddle extends Phaser.GameObjects.Rectangle {
   }
 }
   
+  
