@@ -1,15 +1,14 @@
 import { Scene } from "phaser";
-
-// import class entities
 import { Paddle } from "../entities/Paddle";
 import { Ball } from "../entities/Ball";
 import { Brick } from "../entities/Brick";
 import { WallBrick } from "../entities/WallBrick";
+import { Bomb } from "../entities/Bomb";
 
 export class Game extends Scene {
   constructor() {
     super("Game");
-    this.touchedBottomBalls = []; // Arreglo para registrar las pelotas que han tocado el suelo
+    this.touchedBottomBalls = []; 
   }
 
   init() {
@@ -22,6 +21,12 @@ export class Game extends Scene {
 
     this.paddle = new Paddle(this, 200, 650, 200, 20, 0xffffff, 1);
     this.wall = new WallBrick(this);
+    this.bombs = this.add.group();
+
+    this.scoreTextgame = this.add.text(20, 20, '0', {
+      fontSize: '32px',
+      fill: '#fff'
+    });
 
     this.physics.add.collider(this.paddle, this.balls);
 
@@ -30,10 +35,14 @@ export class Game extends Scene {
       this.wall,
       (ball, brick) => {
         brick.hit();
-        this.puntaje();
+        this.puntaje(); 
 
         if (brick.isBallCreator) {
           this.createNewBall(ball.x, ball.y);
+        }
+
+        if (brick.isBombCreator) {
+          this.createNewBomb(ball.x, ball.y);
         }
 
         if (this.wall.getChildren().every(brick => brick.destroyed)) {
@@ -47,10 +56,8 @@ export class Game extends Scene {
       this
     );
 
-    // Colocar el puntaje en la esquina superior izquierda y hacer el texto más grande
-    this.scoreTextgame = this.add.text(20, 20, `0`, {
-      fontSize: '32px', // Tamaño del texto más grande
-      fill: '#fff' // Color del texto blanco
+    this.physics.add.collider(this.paddle, this.bombs, (paddle, bomb) => {
+      this.handleGameOver();
     });
 
     this.physics.world.on("worldbounds", (body, up, down, left, right) => {
@@ -66,28 +73,45 @@ export class Game extends Scene {
   }
 
   createNewBall(x, y) {
-    console.log('Creando nueva pelota en', x, y); // Añadir log para depuración
+    console.log('Creando nueva pelota en', x, y);
     const newBall = new Ball(this, x, y, 10, 0xffffff, 1);
     this.balls.add(newBall);
-    newBall.increaseSpeed(1.05); // Ajusta la velocidad si es necesario
+    newBall.increaseSpeed(1.05);
+  }
+
+  createNewBomb(x, y) {
+    console.log('Creando nueva bomba en', x, y); // Verificar que se imprima en la consola
+    const newBomb = new Bomb(this, x, y, 20, 20, 0xff0000, 1);
+    this.bombs.add(newBomb);
   }
 
   handleBallTouchBottom(ball) {
-    ball.destroy(); // Destruir la pelota que tocó el suelo
-    this.touchedBottomBalls.push(ball); // Añadir la pelota al arreglo de pelotas tocadas
-
+    ball.destroy(); 
+    this.touchedBottomBalls.push(ball);
+  
     // Eliminar la pelota del grupo de pelotas
     this.balls.remove(ball, true, true);
-
+  
     // Verificar si todas las pelotas han tocado el suelo
     if (this.touchedBottomBalls.length === this.balls.getLength() + this.touchedBottomBalls.length) {
       console.log("Todas las pelotas han tocado el suelo");
-      this.scene.start("GameOver");
+      this.scene.start("GameOver", { score: this.score }); // Pasar la puntuación
     }
   }
+  
+
+  handleGameOver() {
+    console.log('¡Juego terminado! La bomba tocó la paleta.');
+    this.bombs.clear(true, true);
+    this.scene.start('GameOver', { score: this.score });
+  }
+  
 
   update() {
     this.paddle.update();
+    this.bombs.getChildren().forEach(bomb => {
+      console.log('Bomb position:', bomb.x, bomb.y);
+    });
   }
 }
 

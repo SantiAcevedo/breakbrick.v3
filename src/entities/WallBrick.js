@@ -1,4 +1,5 @@
-import { Brick } from "./Brick";
+import Phaser from 'phaser';
+import { Brick } from './Brick'; 
 
 export class WallBrick extends Phaser.GameObjects.Group {
   constructor(scene) {
@@ -9,8 +10,9 @@ export class WallBrick extends Phaser.GameObjects.Group {
   createWall() {
     for (let i = 0; i < 10; i++) {
       for (let j = 0; j < 4; j++) {
-        // Reducir la probabilidad de que un ladrillo sea un creador de pelotas
-        let isBallCreator = Phaser.Math.Between(0, 10) > 8;
+        let isBallCreator = Phaser.Math.Between(0, 10) > 9;
+        let isBombCreator = Phaser.Math.Between(0, 10) > 9; //configurar la probabilidad
+
         let brick = new Brick(
           this.scene,
           40 + i * 100,
@@ -19,7 +21,8 @@ export class WallBrick extends Phaser.GameObjects.Group {
           20,
           0xffffff,
           1,
-          isBallCreator
+          isBallCreator,
+          isBombCreator
         );
         this.add(brick);
       }
